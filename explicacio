@@ -1,0 +1,9 @@
+Un objecte està format per vèrtexs i 	un material.
+
+
+Un objecte té un 		vertex shader i un fragment shader associat.
+Relativity.vs: uniforms
+	→ coordenades del vèrtex
+	→ velocitat
+	→ posició del jugador
+fragment → per defecte Three.js

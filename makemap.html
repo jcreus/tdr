@@ -1,0 +1,27 @@
+<html>
+<body>
+<script src="threejs.js"></script>
+<script>
+var scene = new THREE.Scene();
+var loader = new THREE.JSONLoader();
+var scenemesh;
+loader.load( "guardo.js", function(geometry, materials){
+	var material = new THREE.MeshFaceMaterial(materials);
+	var mesh = new THREE.Mesh(geometry, material);
+
+	scene.add(mesh);
+	mesh.geometry.computeBoundingBox();
+	var bbox = mesh.geometry.boundingBox;
+	var data = [];
+	for (var i=bbox.min.x; i<bbox.max.x; i += 5) {
+		var arr = [];
+		for (var j=bbox.min.z; j<bbox.max.z; j += 5) {
+			var ray = new THREE.Raycaster(new THREE.Vector3(i,0,j), new THREE.Vector3(0,1,0));
+			var intersections = ray.intersectObjects(scene.children, true );
+			if (intersections.length > 1) console.log(intersections[0].distance,i,j);
+		}
+	}
+});
+</script>
+</body>
+</html>

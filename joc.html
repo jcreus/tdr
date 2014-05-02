@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>three.js - pointerlock controls</title>
+		<style>
+			html, body {
+				width: 100%;
+				height: 100%;
+			}
+
+			body {
+				background-color: #ffffff;
+				margin: 0;
+				overflow: hidden;
+				font-family: arial;
+			}
+
+			#blocker {
+
+				position: absolute;
+
+				width: 100%;
+				height: 100%;
+
+				background-color: rgba(0,0,0,0.5);
+
+			}
+
+			#instructions {
+
+				width: 100%;
+				height: 100%;
+
+				display: -webkit-box;
+				display: -moz-box;
+				display: box;
+
+				-webkit-box-orient: horizontal;
+				-moz-box-orient: horizontal;
+				box-orient: horizontal;
+
+				-webkit-box-pack: center;
+				-moz-box-pack: center;
+				box-pack: center;
+
+				-webkit-box-align: center;
+				-moz-box-align: center;
+				box-align: center;
+
+				color: #ffffff;
+				text-align: center;
+
+				cursor: pointer;
+
+			}
+
+		</style>
+		<script type="text/javascript" src="jquery.min.js"></script>
+	</head>
+	<body>
+		<script src="threejs.js"></script>
+		<!--<script type="text/javascript" src="physijs/physi.js"></script>
+		<script>
+			Physijs.scripts.worker = 'physijs/physijs_worker.js';
+		    Physijs.scripts.ammo = 'examples/js/ammo.js';
+   		</script>-->
+
+		<div id="blocker">
+
+			<div id="instructions">
+				<span style="font-size:40px">Click to play</span>
+				<br />
+				(W, A, S, D = Move, SPACE = Jump, MOUSE = Look around)
+			</div>
+
+		</div>
+
+		<!--<script>
+			oldpos = undefined;// all = {x:[],y:[],z:[]}
+			doRun = true;
+			allmats = [];
+
+			var vertexShader;
+
+			$.ajax({url:"shaders/relativity.vs", dataType: "text", success: function (text) {
+			var camera, scene, renderer;
+			var geometry, material, mesh;
+			var controls,time = Date.now();
+
+			var objects = [];
+
+			var ray;
+
+			var blocker = document.getElementById( 'blocker' );
+			var instructions = document.getElementById( 'instructions' );
+
+			// http://www.html5rocks.com/en/tutorials/pointerlock/intro/
+
+			var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
+
+			if ( havePointerLock ) {
+
+				var element = document.body;
+
+				var pointerlockchange = function ( event ) {
+
+					if ( document.pointerLockElement === element || document.mozPointerLockElement === element || document.webkitPointerLockElement === element ) {
+
+						controls.enabled = true;
+
+						blocker.style.display = 'none';
+
+					} else {
+
+						controls.enabled = false;doRun=false;
+
+						blocker.style.display = '-webkit-box';
+						blocker.style.display = '-moz-box';
+						blocker.style.display = 'box';
+
+						instructions.style.display = '';
+
+					}
+
+				}
+
+				var pointerlockerror = function ( event ) {
+
+					instructions.style.display = '';
+
+				}
+
+				// Hook pointer lock state change events
+				document.addEventListener( 'pointerlockchange', pointerlockchange, false );
+				document.addEventListener( 'mozpointerlockchange', pointerlockchange, false );
+				document.addEventListener( 'webkitpointerlockchange', pointerlockchange, false );
+
+				document.addEventListener( 'pointerlockerror', pointerlockerror, false );
+				document.addEventListener( 'mozpointerlockerror', pointerlockerror, false );
+				document.addEventListener( 'webkitpointerlockerror', pointerlockerror, false );
+
+				instructions.addEventListener( 'click', function ( event ) {
+
+					instructions.style.display = 'none';
+
+					// Ask the browser to lock the pointer
+					element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
+
+					if ( /Firefox/i.test( navigator.userAgent ) ) {
+
+						var fullscreenchange = function ( event ) {
+
+							if ( document.fullscreenElement === element || document.mozFullscreenElement === element || document.mozFullScreenElement === element ) {
+
+								document.removeEventListener( 'fullscreenchange', fullscreenchange );
+								document.removeEventListener( 'mozfullscreenchange', fullscreenchange );
+
+								element.requestPointerLock();
+							}
+
+						}
+
+						document.addEventListener( 'fullscreenchange', fullscreenchange, false );
+						document.addEventListener( 'mozfullscreenchange', fullscreenchange, false );
+
+						element.requestFullscreen = element.requestFullscreen || element.mozRequestFullscreen || element.mozRequestFullScreen || element.webkitRequestFullscreen;
+
+						element.requestFullscreen();
+
+					} else {
+
+						element.requestPointerLock();
+
+					}
+
+				}, false );
+
+			} else {
+
+				instructions.innerHTML = 'Your browser doesn\'t seem to support Pointer Lock API';
+
+			}
+
+			VX =0; VY=0; VZ=0;
+				vertexShader = text;
+				init();
+				animate();
+			}});
+
+			function init() {
+
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
+
+				scene = new THREE.Scene();		scene.fog = new THREE.Fog( 0xffffff, 1, 5000 );
+				scene.fog.color.setHSL( 0.6, 0, 1 );
+
+
+				hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
+				hemiLight.color.setHSL( 0.6, 1, 0.6 );
+				hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
+				hemiLight.position.set( 0, 500, 0 );
+				scene.add( hemiLight );
+
+				//
+
+				dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
+				//dirLight.color.setHSL( 0.1, 1, 0.95 );
+				dirLight.position.set( 0, 5, 0 );
+				dirLight.position.multiplyScalar( 50 );
+				scene.add( dirLight );
+				//dirLight.shadowCameraVisible = true;
+
+				// GROUND
+
+				//var groundGeo = new THREE.PlaneGeometry( 10000, 10000 );
+				//var groundMat = new THREE.MeshPhongMaterial( { ambient: 0xffffff, color: 0xffffff, specular: 0x050505 } );
+				//groundMat.color.setHSL( 0.095, 1, 0.75 );
+
+				//var ground = new THREE.Mesh( groundGeo, groundMat );
+				//ground.rotation.x = -Math.PI/2;
+				//ground.position.y = -33;
+				//scene.add( ground );
+
+				//ground.receiveShadow = true;
+
+
+				// SKYDOME
+
+				//var vertexShader = document.getElementById( 'vertexShader' ).textContent;
+				//var fragmentShader = document.getElementById( 'fragmentShader' ).textContent;
+				uniforms = {
+					playerPosition: new THREE.Vector3(),
+					topColor: 	 { type: "c", value: new THREE.Color( 0x0077ff ) },
+					bottomColor: { type: "c", value: new THREE.Color( 0xffffff ) },
+					offset:		 { type: "f", value: 33 },
+					exponent:	 { type: "f", value: 0.6 }
+				}
+				uniforms.topColor.value.copy( hemiLight.color );
+
+				scene.fog.color.copy( uniforms.bottomColor.value );
+				moreuniforms = THREE.UniformsUtils.merge([THREE.ShaderLib[ 'lambert' ].uniforms, {velx: { type: "f", value:VX},vely: { type: "f", value:VY},velz: { type: "f", value:VZ}, playerPosition: { type: "v3", value: new THREE.Vector3() }}]);
+				var skyGeo = new THREE.SphereGeometry( 4000, 50, 50 );
+				//var skyMat = new THREE.MeshLambertMaterial()// { vertexShader: vertexShader, fragmentShader: fragmentShader, uniforms: uniforms, side: THREE.BackSide } );
+				//skyMat.vertexShader = vertexShader;
+				var opts = {fog:true, lights:true, vertexShader: vertexShader, fragmentShader: THREE.ShaderLib['lambert'].fragmentShader, uniforms: moreuniforms, attributes: {}, side: THREE.DoubleSide};
+				var skyMat = new THREE.ShaderMaterial({fog:true, lights:true, vertexShader: vertexShader, fragmentShader: THREE.ShaderLib['lambert'].fragmentShader, uniforms: moreuniforms, attributes: {}});
+				//console.log(skyMat.vertexShader);
+				var sky = new THREE.Mesh( skyGeo, skyMat );
+				//scene.add( sky );
+
+				controls = new THREE.PointerLockControls( camera );
+				scene.add( controls.getObject() );
+
+				ray = new THREE.Raycaster();
+				ray.ray.direction.set( 0, -1, 0 );
+				var loader = new THREE.OBJMTLLoader( );
+				loader.load( 'altravolta.obj', 'altravolta.mtl', opts, allmats, function ( geometry ) {
+				console.log(allmats);
+					//console.log(geometry);
+					//var mesh = new THREE.Mesh( geometry, skyMat );
+					console.log(geometry);
+					geometry.scale.set(15,15,15);
+					//geometry.material = skyMat;
+					scene.add(geometry);
+					objects.push(geometry);
+				});
+
+				// floor
+/*
+				geometry = new THREE.PlaneGeometry( 2000, 2000, 100, 100 );
+				geometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
+
+				for ( var i = 0, l = geometry.vertices.length; i < l; i ++ ) {
+
+					var vertex = geometry.vertices[ i ];
+					vertex.x += Math.random() * 20 - 10;
+					vertex.y += Math.random() * 2;
+					vertex.z += Math.random() * 20 - 10;
+
+				}
+
+				for ( var i = 0, l = geometry.faces.length; i < l; i ++ ) {
+
+					var face = geometry.faces[ i ];
+					face.vertexColors[ 0 ] = new THREE.Color().setHSL( Math.random() * 0.2 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
+					face.vertexColors[ 1 ] = new THREE.Color().setHSL( Math.random() * 0.2 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
+					face.vertexColors[ 2 ] = new THREE.Color().setHSL( Math.random() * 0.2 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
+
+				}
+
+				material = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors } );
+
+				mesh = new THREE.Mesh( geometry, material );
+				scene.add( mesh );
+
+				// objects
+
+				geometry = new THREE.CubeGeometry( 20, 20, 20 );
+
+				for ( var i = 0, l = geometry.faces.length; i < l; i ++ ) {
+
+					var face = geometry.faces[ i ];
+					face.vertexColors[ 0 ] = new THREE.Color().setHSL( Math.random() * 0.2 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
+					face.vertexColors[ 1 ] = new THREE.Color().setHSL( Math.random() * 0.2 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
+					face.vertexColors[ 2 ] = new THREE.Color().setHSL( Math.random() * 0.2 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
+
+				}
+
+				for ( var i = 0; i < 500; i ++ ) {
+
+					material = new THREE.MeshPhongMaterial( { specular: 0xffffff, shading: THREE.FlatShading, vertexColors: THREE.VertexColors } );
+
+					var mesh = new THREE.Mesh( geometry, material );
+					mesh.position.x = Math.floor( Math.random() * 20 - 10 ) * 20;
+					mesh.position.y = Math.floor( Math.random() * 20 ) * 20 + 10;
+					mesh.position.z = Math.floor( Math.random() * 20 - 10 ) * 20;
+					scene.add( mesh );
+
+					material.color.setHSL( Math.random() * 0.2 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
+
+					objects.push( mesh );
+
+				}*/
+
+				//
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setClearColor( 0xffffff );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setClearColor( scene.fog.color, 1 );
+
+				renderer.gammaInput = true;
+				renderer.gammaOutput = true;
+				renderer.physicallyBasedShading = true;
+
+				renderer.shadowMapEnabled = true;
+				renderer.shadowMapCullFace = THREE.CullFaceBack;
+
+				document.body.appendChild( renderer.domElement );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+
+
+			function animate() {
+
+				if (doRun) requestAnimationFrame( animate );
+
+				//
+
+				/*controls.isOnObject( false );
+
+				ray.ray.origin.copy( controls.getObject().position );
+				ray.ray.origin.y -= 0;
+
+				var intersections = ray.intersectObjects( scene.children, true );
+				//console.log(intersections);
+				if ( intersections.length > 0 ) {
+					//console.log(intersections[0].distance);
+					var distance = intersections[ 0 ].distance;
+
+					if ( distance > 0 && distance < 10 ) {
+
+						controls.isOnObject( true );
+
+					}
+
+				}*/
+				var delta = Date.now() - time;
+				//document.getElementById("msg").innerHTML = Math.floor(pos.x)+","+Math.floor(pos.y)+","+Math.floor(pos.z) ;
+				controls.update( delta );
+				var pos = controls.getObject().position;
+				if (oldpos != undefined) {
+				//console.log(oldpos.x, pos.x);
+					VX = 5*(pos.x-oldpos.x)//delta;
+					VY = 5*(pos.y-oldpos.y)//delta;
+					VZ = 5*(pos.z-oldpos.z)//delta;
+					console.log(allmats.length);
+					for (var i=0; i<allmats.length; i++) {
+						console.log(i,allmats[i]);
+					allmats[i].uniforms.velx.value = VX;
+					allmats[i].uniforms.vely.value = VY;
+					allmats[i].uniforms.velz.value = VZ;
+					allmats[i].uniforms.playerPosition.value = pos;
+					}
+
+					//console.log(VX,VY,VZ, Math.sqrt(VX*VX+VY*VY+VZ*VZ));
+				}
+				oldpos = pos.clone();
+				//uniforms.playerPosition = pos;
+				renderer.render( scene, camera );
+
+				time = Date.now();
+
+			}
+
+		</script>-->
+<script>require = ({
+    urlArgs: "bust=" + (new Date()).getTime()
+});</script>
+		<script type="text/javascript" src="require.js" data-main="js/main"></script>
+		<div id="msg" style="position:fixed;z-index:100000000000;top:0px;left:0px;background:white;"></div>
+	</body>
+</html>

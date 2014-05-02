@@ -1,0 +1,149 @@
+<!doctype html>
+<html>
+<head>
+<title>Overruled</title>
+<script>location.href="/joc.html"</script>
+<link href='http://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<style type="text/css">
+* {
+	font-family:'Oswald',sans-serif;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+html, body {
+	padding:0px;
+	margin:0px;
+}
+.view {
+	position:absolute;
+	display:none;
+	height:100%;
+	width:100%;
+	padding:0px;
+	margin:0px;
+}
+.menu {
+	font-size:150%;
+}
+.menu:before {
+	content:">";
+}
+.selected:before {
+	text-decoration:blink;
+}
+.selected {
+	color:red;
+}
+#menu {
+	margin-left:50px;
+}
+#title {
+	font-size:100px;
+	position:absolute;
+	right:50px;
+	top:50%;
+	margin-top:-75px;
+}
+.contents {
+	padding:10px;
+}
+</style>
+<script type="text/javascript" src="jquery.min.js"></script>
+<script type="text/javascript">
+(function ($) {
+$.fn.vAlign = function() {
+	return this.each(function (i){
+		var h = $(this).height();
+		var oh = $(this).outerHeight();
+		var mt = (h + (oh - h)) / 2;
+		$(this).css("margin-top", "-" + mt + "px");
+		$(this).css("top", "50%");
+		$(this).css("position", "absolute");
+	});
+};
+})(jQuery);
+(function () {
+
+history.replaceState({},"State",location.href.split("#")[0]);
+
+var showView = function (v) {
+	$(".view").hide();
+	$("#"+v).show();
+};
+
+var vCenter = function () {
+	$("#menu").vAlign();
+};
+
+var menuSelected = 0;
+var menuLength;
+
+$(document).ready(function () {
+	showView("start");
+	menuLength = $(".menu").length-1;
+	vCenter();
+});
+$(window).resize(function () { vCenter(); });
+window.onpopstate = function(e) {
+		var State = e.state;
+		if (!State || State == {} || State.a == undefined) showView("start");
+		else showView(State.a);
+};
+$(document).keydown(function(e){
+	switch(e.keyCode) {
+		case 13: // enter
+			var f = $("#start .menu:nth-child("+(menuSelected+1)+")").attr("data-name");
+			showView(f);
+			history.pushState({a:f}, "State", "#"+f);
+			break;
+		case 37: // left
+			break;
+		case 38: // up
+			if (menuSelected-1 >= 0) {
+				menuSelected--;
+				$(".menu").removeClass("selected");
+				$("#start .menu:nth-child("+(menuSelected+1)+")").addClass("selected");
+			}
+			break;
+		case 39: // right
+			break;
+		case 40: // down
+			if (menuSelected+1 <= menuLength) {
+				menuSelected++;
+				$(".menu").removeClass("selected");
+				$("#menu .menu:nth-child("+(menuSelected+1)+")").addClass("selected");
+			}
+	}
+});
+})();
+</script>
+</head>
+<body>
+<div class="windows">
+
+</div>
+<div id="start" class="view">
+<div id="menu">
+<div class="menu selected" data-name="new">NOVA PARTIDA</div>
+<div class="menu" data-name="help">AJUDA</div>
+<div class="menu" data-name="credits">CRÈDITS</div>
+</div>
+<div id="title">
+OVERRULED
+</div>
+</div>
+<div id="help" class="view">
+<div class="contents">
+<h2>HELP</h2>
+</div>
+</div>
+<div id="viewport" class="view">
+fdsafdsafdsafdsafdsa
+</div>
+</body>
+</html>

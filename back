@@ -1,0 +1,33 @@
+			varying vec3 vWorldPosition;
+			varying vec3 vColor;
+			uniform vec3 color;
+
+			void main() {
+
+				vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
+				vWorldPosition = worldPosition.xyz;
+
+				float vx = 9.0;
+				float vy = 0.0;
+				float vz = 5.0;
+				float v = sqrt(vx*vx+vy*vy+vz*vz);
+				float c = 10.0;
+				float bx = vx/c;
+				float by = vy/c;
+				float bz = vz/c;
+				float b = sqrt(bx*bx+by*by+bz*bz);
+				float lorentz = 1.0/sqrt(1.0-b*b/c*c);
+
+				mat4 matrix = mat4(
+					vec4(lorentz, -lorentz*bx, -lorentz*by, -lorentz*bz),
+					vec4(-lorentz*bx, 1.0+(lorentz-1.0)*bx*bx/b/b, (lorentz-1.0)*bx*by/b/b, (lorentz-1.0)*bz*bx/b/b),
+					vec4(-lorentz*by, (lorentz-1.0)*bx*by/b/b,1.0+(lorentz-1.0)*by*by/b/b,(lorentz-1.0)*bz*by/b/b),
+					vec4(-lorentz*bz, (lorentz-1.0)*bx*bz/b/b, (lorentz-1.0)*by*bz/b/b,1.0+(lorentz-1.0)*bz*bz/b/b)
+				);
+				vec4 tmp = matrix*vec4(1.0, position);
+
+				//vColor = color;
+				gl_Position = projectionMatrix * modelViewMatrix * vec4( position,1.0);//tmp[1], tmp[2], tmp[3], 1.0 );
+
+			}
+
