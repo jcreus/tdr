@@ -3,7 +3,7 @@
  */
 
 define("PointerLockControls", function () {
-	var Y_POS=2; //2.5
+	var Y_POS=5//2; //2.5
 	THREE.PointerLockControls = function ( camera ) {
 
 		var scope = this;
@@ -14,8 +14,8 @@ define("PointerLockControls", function () {
 		pitchObject.add( camera );
 
 		var yawObject = new THREE.Object3D();
-		yawObject.position.y = Y_POS;
-		yawObject.position.x = -80;
+		yawObject.position.y = 3+3;
+		yawObject.position.x = 0;
 		yawObject.position.z = 0;
 		yawObject.add( pitchObject );
 		this.yawObject = yawObject;
@@ -146,6 +146,7 @@ define("PointerLockControls", function () {
 		}();
 
 		this.update = function ( delta, inverse ) {
+			//inverse = false;
 
 			if ( scope.enabled === false ) return;
 
@@ -156,11 +157,11 @@ define("PointerLockControls", function () {
 
 			//velocity.y -= 0.005 * delta;
 
-			if ( moveForward ) velocity.z -= 0.01 * delta;
-			if ( moveBackward ) velocity.z += 0.01 * delta;
+			if ( moveForward ) velocity.z -= 0.02 * delta;
+			if ( moveBackward ) velocity.z += 0.02 * delta;
 
-			if ( moveLeft ) velocity.x -= 0.2 * delta;
-			if ( moveRight ) velocity.x += 0.2 * delta;
+			if ( moveLeft ) velocity.x += 0.02 * delta;
+			if ( moveRight ) velocity.x -= 0.02 * delta;
 
 			if ( isOnObject === true ) {
 

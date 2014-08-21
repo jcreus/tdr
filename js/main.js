@@ -165,10 +165,11 @@ function clone(item) {
 	var heightData = []; // y, x
 
 	function makeHeightMap() {
-		var canvas = document.createElement( 'canvas' );
+		canvas = document.createElement( 'canvas' );
 		canvas.width = 1024;
 		canvas.height = 1024;
 		//document.body.appendChild(canvas);
+		//canvas.style.transform="scale(0.5)";
 		canvas.style.zIndex = 10000;
 		canvas.style.position = "fixed";
 
@@ -177,7 +178,7 @@ function clone(item) {
 		var size = 1024*1024, data = new Float32Array( size );
 
 		var img = document.createElement("img");
-		img.src = "heightmap.png";
+		img.src = "nova.png";
 		img.onload = function () {
 			//console.log(img);
 			context.drawImage(img,0,0);
@@ -188,7 +189,13 @@ function clone(item) {
 	        for(var y = 0; y < 1024; y++) {
 	          var arr = [];
 	          for(var x = 0; x < 1024; x++) {
-	            var red = data[((1024 * y) + x) * 4];
+	            var red = data[((1024 * y) + x) * 4]/255*40.2;
+	            var green = data[((1024 * y) + x) * 4 + 1]/255*40.2;
+	            if (red == green) {
+	            	arr.push([red]);
+	            } else {
+	            	arr.push([red,green]);
+	            }
 	            /*var green = data[((1024 * y) + x) * 4 + 1];
 	            var h1 = hdiff*(255-red)/128;
 	            var h2 = hdiff*(255-green)/128;
@@ -197,7 +204,10 @@ function clone(item) {
 	            } else {
 	            	arr.push([h1, h2])
 	            }*/
-	            arr.push(23.22*(255-red)/128);
+	            //if (x == 416 && y == 594) {
+	            // 	console.log(x,y, red, 40.02*(255-red)/128)
+	            //}
+	            //arr.push(40.02*(255-red)/128);
 	          }
 	          heightData.push(arr);
 	        }
@@ -216,17 +226,20 @@ function clone(item) {
 
 
 		hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
-		hemiLight.color.setHSL( 0.6, 1, 0.6 );
+		//hemiLight.color.setHSL( 0.6, 1, 0.6 );
 		hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
 		hemiLight.position.set( 0, 500, 0 );
-		scene.add( hemiLight );
+		//scene.add( hemiLight );
 
 		//
 
-		dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
-		dirLight.position.set( 0, 5, 0 );
-		dirLight.position.multiplyScalar( 50 );
+		dirLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+		dirLight.position.set( -30, 500, 0 );
+		//dirLight.position.multiplyScalar( 50 );
 		scene.add( dirLight );
+
+		var light = new THREE.AmbientLight( 0x404040 ); // soft white light scene.add( light );
+		scene.add(light)
 
 		uniforms = {
 			playerPosition: new THREE.Vector3(),
@@ -264,7 +277,7 @@ function clone(item) {
 		});*/
 		var loader = new THREE.JSONLoader();
 
-		loader.load( "guardo2.js", function(geometry, materials){
+		loader.load( "escola2.js", function(geometry, materials){ // guardo2
 		  var material = new THREE.MeshLambertMaterial({color: 0x55B663});
 		  var material = new THREE.MeshFaceMaterial(materials);
 		  mesh = new THREE.Mesh(geometry, material);
@@ -274,7 +287,8 @@ function clone(item) {
 			//console.log(mat.name);
 			//console.log(mat.color);
 			var newmat = new THREE.ShaderMaterial(clone(opts));
-			newmat.uniforms.diffuse.value = clone(mat.color)
+			//console.log(newmat.uniforms);
+			newmat.uniforms.ambient.value = clone(mat.color)
 			allmats.push(newmat);
 			mesh.material.materials[i] = newmat;
 		  }
@@ -320,12 +334,15 @@ if (ready) {
 		//
 		var pos = clone(controls.getObject().position);
 		//pos.y = 0;
-		var mapCoords = [(pos.x+98)/198*1024, (pos.z-56)/198*1024];
-		var newh = heightData[Math.round(Math.abs(mapCoords[0]))][Math.round(Math.abs(mapCoords[1]))];
-		var oldh = pos.y;
+		var mapCoords = [(pos.x+118.03)/437.01*1024, (pos.z+287.21)/437.01*1024];
+		//canvas.getContext('2d').fillRect(mapCoords[0],mapCoords[1],1,1);
+		var newh = heightData[Math.round(Math.abs(mapCoords[1]))][Math.round(Math.abs(mapCoords[0]))];
+		//console.log(Math.round(Math.abs(mapCoords[0])),Math.round(Math.abs(mapCoords[1])));
+		var oldh = pos.y-3;
 		//console.log(newh, oldh);//fdsafdas;
 		//controls.yawObject.position.y = pos.y = newh;
-		document.getElementById("msg").innerHTML = Math.floor(pos.x)+","+Math.floor(pos.y)+","+Math.floor(pos.z)+"<br>"+Math.floor(pos.x+98)+","+Math.floor(pos.y)+","+Math.floor(pos.z-56)
+		//document.getElementById("msg").innerHTML = Math.floor(pos.x)+","+Math.floor(pos.y)+","+Math.floor(pos.z)+"<br>"+Math.floor(pos.x+98)+","+Math.floor(pos.y)+","+Math.floor(pos.z-56)
+		//document.getElementById("msg").innerHTML = newh+","+oldh//Math.floor(pos.x)+","+Math.floor(pos.y)+","+Math.floor(pos.z)+"<br>"+Math.floor(mapCoords[0])+","+Math.floor(mapCoords[1])+"<br>"+newh
 		//scene.updateMatrixWorld();
 		//var ray = new THREE.Raycaster(pos, THREE.Vector3(0,1,0));
 		//var intersections = ray.intersectObjects(scene.children);
@@ -350,9 +367,24 @@ if (ready) {
 
 
 		if (oldpos != undefined && canmove) {
-			if (newh-oldh < 2) {
-				pos.y = newh;
-				controls.yawObject.position.y = newh+1;
+			//console.log(newh, oldh, newh-oldh)
+			var nova = -1;
+			var mindiff = 100000;
+			for (var h=0; h<newh.length; h++) {
+				var noudiff = Math.abs(newh[h]-oldh);
+				//console.log(noudiff);
+				if (noudiff < 3) {
+					if (noudiff < mindiff) {
+						nova = newh[h];
+						mindiff = noudiff;
+					}
+				}
+			}
+			//document.getElementById("msg").innerHTML = nova
+			//console.log(newh.length, nova, oldh);
+			if (nova != -1) {
+				pos.y = nova;
+				controls.yawObject.position.y = nova+3;
 				controls.update( delta );
 			} else {
 				controls.update( delta, true);
@@ -388,7 +420,7 @@ if (ready) {
 		renderer.render( scene, camera );
 
 		time = Date.now();
-} else
-		requestAnimationFrame( animate ); console
+} else {requestAnimationFrame( animate ); }
+		//requestAnimationFrame( animate ); console
 	}
 });
