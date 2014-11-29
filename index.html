@@ -2,7 +2,7 @@
 <html>
 <head>
 <title>Overruled</title>
-<script>location.href="joc.html"</script>
+<!--<script>location.href="joc.html"</script>-->
 <link href='http://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <style type="text/css">
@@ -98,8 +98,13 @@ $(document).keydown(function(e){
 	switch(e.keyCode) {
 		case 13: // enter
 			var f = $("#start .menu:nth-child("+(menuSelected+1)+")").attr("data-name");
-			showView(f);
-			history.pushState({a:f}, "State", "#"+f);
+			if (f == "new") {
+				location.href = "joc.html";
+			} else if (f == "multiplayer") {
+				location.href = "joc.html?"+$("#username").val();
+			} else if (f == "about") {
+				location.href = "about.html";
+			}
 			break;
 		case 37: // left
 			break;
@@ -116,9 +121,16 @@ $(document).keydown(function(e){
 			if (menuSelected+1 <= menuLength) {
 				menuSelected++;
 				$(".menu").removeClass("selected");
-				$("#menu .menu:nth-child("+(menuSelected+1)+")").addClass("selected");
+				$($("#menu .menu")[menuSelected]).addClass("selected");
 			}
 	}
+				var n = $(".selected").attr("data-name");
+				if (n == "multiplayer") {
+					$("#username").slideDown();
+				} else {
+					$("#username").hide();
+					//if ($("#username").is(":visible")) $("#username").slideUp();
+				}
 });
 })();
 </script>
@@ -129,12 +141,13 @@ $(document).keydown(function(e){
 </div>
 <div id="start" class="view">
 <div id="menu">
-<div class="menu selected" data-name="new">NOVA PARTIDA</div>
-<div class="menu" data-name="help">AJUDA</div>
-<div class="menu" data-name="credits">CRÈDITS</div>
+<div class="menu selected" data-name="new">NEW GAME</div>
+<div class="menu" data-name="multiplayer">MULTIPLAYER</div>
+<input type="text" style="display:none;" id="username">
+<div class="menu" data-name="about">ABOUT</div>
 </div>
 <div id="title">
-OVERRULED
+NOMDELJOC
 </div>
 </div>
 <div id="help" class="view">

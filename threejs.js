@@ -23736,6 +23736,11 @@ THREE.WebGLRenderer = function ( parameters ) {
 			flipSided: material.side === THREE.BackSide
 
 		};
+		console.log("duuuude"+shaderID)
+		if (shaderID == "lambert") {
+			material.vertexShader = material.vertexShader;
+			material.uniforms = material.uniforms;
+		}
 
 		material.program = buildProgram( shaderID, material.fragmentShader, material.vertexShader, material.uniforms, material.attributes, material.defines, parameters, material.index0AttributeName );
 
@@ -23793,8 +23798,8 @@ THREE.WebGLRenderer = function ( parameters ) {
 
 	function setMaterialShaders( material, shaders ) {
 
-		material.uniforms = THREE.UniformsUtils.clone( shaders.uniforms );
-		material.vertexShader = shaders.vertexShader;
+		if (!material.uniforms) material.uniforms = THREE.UniformsUtils.clone( shaders.uniforms );
+		if (!material.vertexShader) material.vertexShader = shaders.vertexShader;
 		material.fragmentShader = shaders.fragmentShader;
 
 	};

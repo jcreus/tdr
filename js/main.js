@@ -14,6 +14,13 @@ require(["PointerLockControls", "OBJMTLLoader", "utils", "text!../shaders/relati
 		var VY = 0;
 		var VZ = 0;
 		var clone = Utils.clone;
+		var players = {};
+		var alienData;
+		var C = 50.0;
+
+		var socket = io.connect('//192.168.66.21:1137');
+		var naame = location.href.split('?')[1];
+		socket.emit('identify',naame);
 
 		setupPointerLock();
 		init();
@@ -90,6 +97,11 @@ require(["PointerLockControls", "OBJMTLLoader", "utils", "text!../shaders/relati
 			//canvas.style.transform="scale(0.5)";
 			canvas.style.zIndex = 10000;
 			canvas.style.position = "fixed";
+			window.onclick =  function () {
+				if (controls.enabled) {
+					console.log("bang");
+				}
+			}
 			var context = canvas.getContext('2d');
 			var size = 1024 * 1024,
 				data = new Float32Array(size);
@@ -131,11 +143,36 @@ require(["PointerLockControls", "OBJMTLLoader", "utils", "text!../shaders/relati
 			};
 		}
 
+		function distance(v1, v2) {
+			return Math.sqrt(Math.pow(v1[0]-v2.x,2)+Math.pow(v1[1]-v2.y,2)+Math.pow(v1[2]-v2.z,2));
+		}
+
 		function init() {
 			makeHeightMap();
 			camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight,
 				0.1, 1000);
 			scene = new THREE.Scene();
+
+			socket.on('newpos', function (data) {
+				if (data.name == naame) return;
+				if (players[data.name] === undefined) {
+					console.log("adding mesh");
+					players[data.name] = new THREE.Mesh(aliendata[0], aliendata[1]);
+					players[data.name].position.set(0,0,0);
+					players[data.name].scale.set(2,2,2);
+					scene.add(players[data.name]);
+				} else {
+			console.log(distance(data.pos, oldpos));
+					setTimeout(function () {
+						players[data.name].position.set(data.pos[0], data.pos[1]+0.5, data.pos[2]);
+						players[data.name].rotation.set(0, data.pos[4]+Math.PI, 0);
+					}, distance(data.pos, oldpos)/C*1000);
+				}
+			});
+			//var cube = new THREE.Mesh(new THREE.CubeGeometry(1, 1, 1), new THREE.MeshNormalMaterial());
+			//cube.position.set(0,6,0);
+			//scene.add(cube);
+
 			scene.fog = new THREE.Fog(0xffffff, 1, 5000);
 			scene.fog.color.setHSL(0.6, 0, 1);
 			hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
@@ -225,24 +262,78 @@ require(["PointerLockControls", "OBJMTLLoader", "utils", "text!../shaders/relati
 			objects.push(geometry);
 		});*/
 			var loader = new THREE.JSONLoader();
-			loader.load("escola2.js", function(geometry, materials) { // guardo2
+			loader.load("caram.js", function(geometry, materials) { // guardo2
 				//var material = new THREE.MeshLambertMaterial({color: 0x55B663});
-				var material = new THREE.MeshFaceMaterial(materials);
-				mesh = new THREE.Mesh(geometry, material);
-				//console.log(mesh);
-				for (var i = 0; i < mesh.material.materials.length; i++) {
+				//var material = new THREE.MeshFaceMaterial(materials);
+				var materialx = new THREE.MeshLambertMaterial( {  } );
+				materialx.uniforms = moreuniforms;//.map = THREE.ImageUtils.loadTexture('img2.png');
+				//materialx.uniforms.map = THREE.ImageUtils.loadTexture('img2.png');
+				materialx.map = THREE.ImageUtils.loadTexture('img2.png');
+				materialx.vertexShader = vertexShader;
+				materialx.needsUpdate = true;
+				var material = new THREE.MeshLambertMaterial( { map : THREE.ImageUtils.loadTexture('img2.png') } );
+				//moreuniforms.map = THREE.ImageUtils.loadTexture('img2.png');
+				/*var material = new THREE.ShaderMaterial({
+					fog: true,
+					lights: true,
+					vertexShader: vertexShader,
+					fragmentShader: THREE.ShaderLib.lambert.fragmentShader,
+					uniforms: moreuniforms,
+					attributes: {}});*/
+				mesh = new THREE.Mesh(geometry, materialx);
+				allmats.push(materialx);
+				console.log("ambimatge", materialx);
+				console.log("senseimg", material)
+				/*for (var i = 0; i < mesh.material.materials.length; i++) {
 					var mat = mesh.material.materials[i];
+					//mesh.material.materials[i] = mesh.material.materials[danum];
+					//console.log(mat);
 					//console.log(mat.name);
 					//console.log(mat.color);
 					var newmat = new THREE.ShaderMaterial(clone(opts));
 					//console.log(newmat.uniforms);
-					newmat.uniforms.ambient.value = clone(mat.color);
+					/*if (mat.uniforms && mat.uniforms.map) {
+						newmat.uniforms.map.value = clone(mat.uniforms.map.value4);
+					} else 
+						newmat.uniforms.ambient.value = clone(mat.color);
+
 					allmats.push(newmat);
 					mesh.material.materials[i] = newmat;
 				}
+				console.log(mesh);*/
+
+				/*for (var i = 0; i < mesh.material.materials.length; i++) {
+					var m = mesh.material.materials[i];
+					if (m.name == "Dabest") {
+						console.log(i);
+						danum = i;
+						break;
+					}
+				}
+				//conssole.log(mesh);
+				for (var i = 0; i < mesh.material.materials.length; i++) {
+					var mat = mesh.material.materials[i];
+					mesh.material.materials[i] = mesh.material.materials[danum];
+					//console.log(mat);
+					//console.log(mat.name);
+					//console.log(mat.color);
+					var newmat = new THREE.ShaderMaterial(clone(opts));
+					//console.log(newmat.uniforms);
+					if (mat.uniforms && mat.uniforms.map) {
+						newmat.uniforms.map.value = clone(mat.uniforms.map.value4);
+					} else 
+						newmat.uniforms.ambient.value = clone(mat.color);
+
+					allmats.push(newmat);
+					//mesh.material.materials[i] = newmat;
+				}*/
 				scene.add(mesh);
 				meshscene = mesh;
 				objects.push(mesh);
+			});
+			loader.load("alien.js", function (geometry, materials) {
+				var material = new THREE.MeshFaceMaterial(materials);
+				aliendata = [geometry, material];
 			});
 			//
 			renderer = new THREE.WebGLRenderer();
@@ -266,9 +357,13 @@ require(["PointerLockControls", "OBJMTLLoader", "utils", "text!../shaders/relati
 		}
 		canmove = true;
 
+		var oldxpos = null;
+		var iii = 0;
 		function animate() {
 			if (ready) {
-				requestAnimationFrame(animate);
+				//iii++;
+				if (iii < 50) requestAnimationFrame(animate);
+				//console.log(allmats);
 				//
 				var pos = clone(controls.getObject().position);
 				//pos.y = 0;
@@ -328,6 +423,20 @@ require(["PointerLockControls", "OBJMTLLoader", "utils", "text!../shaders/relati
 					} else {
 						controls.update(delta, true);
 					}
+					var rot = new THREE.Vector3(controls.pitchObject.rotation.x, controls.yawObject.rotation.y,0);
+					var euler = new THREE.Euler( 0, 0, 0, "YXZ" );
+					rot.applyEuler(euler);
+					globalCont = controls;
+					var xpos = [parseFloat(pos.x.toFixed(1)),
+									parseFloat(pos.y.toFixed(1)),
+									parseFloat(pos.z.toFixed(1)),
+									parseFloat(rot.x.toFixed(1)),
+									parseFloat(rot.y.toFixed(1)),
+									parseFloat(rot.z.toFixed(1))];
+					if (JSON.stringify(oldxpos) != JSON.stringify(xpos)) {
+						socket.emit('position', xpos);
+					}
+					oldxpos = xpos;
 					/*var ray = new THREE.Raycaster(new THREE.Vector3(pos.x,0,pos.z), new THREE.Vector3(0,1,0));
 			var intersections = ray.intersectObjects(scene.children, true );
 			if (intersections.length >= 1) {
