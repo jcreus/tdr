@@ -17,7 +17,7 @@ require(["PointerLockControls", "OBJMTLLoader", "utils",
 	var clone = Utils.clone;
 	var players = {};
 	var alienData;
-	var C = 2.50;
+	var C = 1.8;
 	var naame = location.href.split('?')[1];
 	if (naame) {
 		var socket = io.connect('//serene-everglades-7014.herokuapp.com:80');///'//192.168.66.21:1137');

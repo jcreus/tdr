@@ -59,7 +59,7 @@ define("PointerLockControls", function () {
 
 				case 37: // left
 				case 65: // a
-					moveLeft = true; break;
+					moveRight = true; break;
 
 				case 40: // down
 				case 83: // s
@@ -68,7 +68,7 @@ define("PointerLockControls", function () {
 
 				case 39: // right
 				case 68: // d
-					moveRight = true;
+					moveLeft = true;
 					break;
 
 				case 32: // space
@@ -91,7 +91,7 @@ define("PointerLockControls", function () {
 
 				case 37: // left
 				case 65: // a
-					moveLeft = false;
+					moveRight = false;
 					break;
 
 				case 40: // down
@@ -101,7 +101,7 @@ define("PointerLockControls", function () {
 
 				case 39: // right
 				case 68: // d
-					moveRight = false;
+					moveLeft = false;
 					break;
 
 			}
