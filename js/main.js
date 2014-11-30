@@ -20,7 +20,7 @@ require(["PointerLockControls", "OBJMTLLoader", "utils",
 	var C = 10.0;
 	var naame = location.href.split('?')[1];
 	if (naame) {
-		var socket = io.connect('http://serene-everglades-7014.herokuapp.com:80');///'//192.168.66.21:1137');
+		var socket = io.connect('//serene-everglades-7014.herokuapp.com:80');///'//192.168.66.21:1137');
 		socket.emit('identify', naame);
 	}
 	setupPointerLock();

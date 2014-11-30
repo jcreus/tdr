@@ -153,8 +153,8 @@ define("PointerLockControls", function () {
 
 			delta *= 0.3;
 
-			velocity.x += ( - velocity.x ) * 0.08 * delta;
-			velocity.z += ( - velocity.z ) * 0.08 * delta;
+			velocity.x += ( - velocity.x ) * 0.06 * delta;
+			velocity.z += ( - velocity.z ) * 0.06 * delta;
 
 			//velocity.y -= 0.005 * delta;
 

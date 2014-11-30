@@ -2,6 +2,7 @@
 				uniform float velx;
 				uniform float vely;
 				uniform float velz;
+				uniform float c;
 #define LAMBERT
 varying vec3 vLightFront;
 #ifdef DOUBLE_SIDED
@@ -189,7 +190,7 @@ mvPosition = modelViewMatrix * vec4( position, 1.0 );
 				float vy = vely;
 				float vz = velz;
 				float v = sqrt(vx*vx+vy*vy+vz*vz);
-				float c = 1.0;
+				//float c = 1.0;
 				float bx = vx/c;
 				float by = vy/c;
 				float bz = vz/c;
